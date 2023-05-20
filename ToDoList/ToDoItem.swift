@@ -5,7 +5,8 @@
 //  Created by Mandy Chen on 5/18/23.
 //
 
-class ToDoItem {
+class ToDoItem: Identifiable {
+    var id = UUID()
     var title = ""
     var isImportant = false
     
