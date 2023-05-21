@@ -8,8 +8,8 @@
 import SwiftUI
 
 struct NewToDoView: View {
+    @Environment(\.managedObjectContext) var context
 
-    @Binding var toDoItems: [ToDoItem]
     @Binding var showNewTask : Bool
 
     @State var title: String
@@ -17,6 +17,7 @@ struct NewToDoView: View {
 
     var body: some View {
 
+        
         VStack{
             Text("Add a new task")
                 .font(.title2)
@@ -54,12 +55,21 @@ struct NewToDoView: View {
             .cornerRadius(10)
             .padding(55)
         }
-        
+        .background((Color(.systemGroupedBackground)))
+
     }
     
     private func addTask(title: String, isImportant: Bool = false) {
-            let task = ToDoItem(title: title, isImportant: isImportant)
-        toDoItems.append(task)
+        let task = ToDo(context: context)
+        task.id = UUID()
+        task.title = title
+        task.isImportant = isImportant
+                
+        do {
+                    try context.save()
+        } catch {
+                    print(error)
+        }
 
         }
 }
@@ -67,7 +77,7 @@ struct NewToDoView: View {
 
 struct NewToDoView_Previews: PreviewProvider {
     static var previews: some View {
-        NewToDoView(toDoItems: .constant([]), showNewTask: .constant(true), title: "", isImportant: false)
+        NewToDoView(showNewTask: .constant(true), title: "", isImportant: false)
     }
 
 

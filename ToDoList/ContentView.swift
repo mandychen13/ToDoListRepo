@@ -8,22 +8,24 @@
 import SwiftUI
 
 struct ContentView: View {
-    @State var toDoItems: [ToDoItem] = []
+    @Environment(\.managedObjectContext) var context
+
+    @FetchRequest(
+            sortDescriptors: [ NSSortDescriptor(keyPath: \ToDo.id, ascending: false) ])
+        
+    var toDoItems: FetchedResults<ToDo>
+
     @State private var showNewTask = false
 
     var body: some View {
        
         VStack(spacing: 20.0) {
-            
-            // Title of List
             HStack (spacing: 15) {
                 Text("To Do List")
                     .font(.largeTitle)
                     .fontWeight(.bold)
                     .foregroundColor(Color.pink)
-                //Button
                 Button (action: {  self.showNewTask = true
-                    
                 }) {
                     Text("+")
                         .font(.title)
@@ -38,25 +40,40 @@ struct ContentView: View {
             List {
                 ForEach (toDoItems) { toDoItem in
                     if toDoItem.isImportant == true {
-                        Text("‼️" + toDoItem.title)
+                        Text("‼️" + (toDoItem.title ?? "No title"))
                     } else {
-                        Text(toDoItem.title)
+                        Text(toDoItem.title ?? "No title")
                     }
                 }
+                .onDelete(perform: deleteTask)
+
             }
             .listStyle(.plain)
-
             
         }
         
         .padding()
 
         if showNewTask {
-            NewToDoView(toDoItems: $toDoItems, showNewTask: $showNewTask, title: "", isImportant: false)
+            NewToDoView(showNewTask: $showNewTask, title: "", isImportant: false)
                 }
         
-    }
-}
+    
+                }
+    
+    private func deleteTask(offsets: IndexSet) {
+            withAnimation {
+                offsets.map { toDoItems[$0] }.forEach(context.delete)
+
+                do {
+                    try context.save()
+                } catch {
+                    print(error)
+                }
+            }
+        }
+            }
+        
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
